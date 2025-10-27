@@ -7,6 +7,9 @@
 
 pub use pallet::*;
 
+#[cfg(test)]
+mod tests_new;
+
 #[frame_support::pallet]
 pub mod pallet {
 	use codec::{Decode, Encode, MaxEncodedLen};
