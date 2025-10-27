@@ -16,7 +16,7 @@ pub mod pallet {
 	};
 	use frame_system::pallet_prelude::*;
 	use scale_info::TypeInfo;
-	use sp_runtime::RuntimeDebug;
+	use sp_runtime::{traits::SaturatedConversion, RuntimeDebug};
 
 	/// Unique identifier for models
 	pub type ModelId = u64;
@@ -122,24 +122,16 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// Register a new AI model (using u8 for model_type: 0=Classification, 1=Regression, 2=Generative)
+		/// Register a new AI model
 		#[pallet::call_index(0)]
 		#[pallet::weight(50_000_000)]
 		pub fn register_model(
 			origin: OriginFor<T>,
 			ipfs_cid: Vec<u8>,
-			model_type_u8: u8,
+			model_type: ModelType,
 			price: u128,
 		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
-
-			// Validate model type
-			ensure!(model_type_u8 <= 2, Error::<T>::InvalidIPFSCID); // Reuse error for simplicity
-			let model_type = match model_type_u8 {
-				0 => ModelType::Classification,
-				1 => ModelType::Regression,
-				_ => ModelType::Generative,
-			};
 
 			// Validate CID
 			let bounded_cid: BoundedVec<u8, ConstU32<128>> =
@@ -154,7 +146,7 @@ pub mod pallet {
 			let fee = T::RegistrationFee::get();
 			ensure!(free_balance >= fee, Error::<T>::InsufficientBalance);
 
-			let _imbalance = T::Currency::withdraw(
+			T::Currency::withdraw(
 				&who,
 				fee,
 				frame_support::traits::WithdrawReasons::FEE,
