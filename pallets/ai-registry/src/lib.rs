@@ -104,7 +104,6 @@ pub mod pallet {
 
 	/// Storage for model metadata indexed by ModelId
 	#[pallet::storage]
-	#[pallet::without_storage_info]
 	pub type Models<T: Config> =
 		StorageMap<_, Blake2_128Concat, ModelId, ModelMetadata<T>, OptionQuery>;
 
